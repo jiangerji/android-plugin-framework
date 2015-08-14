@@ -1,0 +1,62 @@
+apply plugin: 'com.android.library'
+
+/**
+ * 获取当前git的版本号
+ */
+def getGitVersion() {
+    return "git rev-parse --short HEAD".execute().text.trim()
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+
+        // 添加到BuildConfig.java中加入git的版本号
+        buildConfigField "String", "GIT_REVISION", "\"${getGitVersion()}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+task clearJar(type: Delete) {
+    println "Clear Jar!"
+    delete 'build/outputs/classes-debug.jar'
+    delete 'build/outputs/classes-release.jar'
+}
+
+task makeJar(type: Copy) {
+    println "make Jar!"
+    from('build/intermediates/bundles/debug/classes.jar')
+    into('build/outputs/')
+    include('classes.jar')
+    rename('classes.jar', 'classes-debug.jar')
+
+//    from('build/intermediates/bundles/release/classes.jar')
+//    into('build/outputs/')
+//    include('classes.jar')
+//    rename('classes.jar', 'classes-release.jar')
+}
+
+makeJar.dependsOn(clearJar, build)
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:support-v4:22.2.0'
+}
