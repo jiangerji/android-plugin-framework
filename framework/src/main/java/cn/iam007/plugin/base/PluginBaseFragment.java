@@ -1,6 +1,5 @@
 package cn.iam007.plugin.base;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,10 +17,7 @@ public class PluginBaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        Activity activity = getActivity();
-//        if (!(activity instanceof PluginBaseActivity)) {
-//            return;
-//        }
+        setHasOptionsMenu(true);
 
         Bundle bundle = getArguments();
         mPluginId = bundle.getString(PluginConstants.KEY_PLUGIN_ID);
@@ -91,11 +87,6 @@ public class PluginBaseFragment extends Fragment {
 
     @Override
     public void startActivity(Intent intent) {
-        Activity activity = getActivity();
-//        if (!(activity instanceof PluginBaseActivity)) {
-//            return;
-//        }
-
         if (isIntentValidation(intent)) {
             intent = urlMap(intent);
             super.startActivity(intent);
@@ -104,15 +95,9 @@ public class PluginBaseFragment extends Fragment {
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode) {
-//        Activity activity = getActivity();
-//        if (!(activity instanceof PluginBaseActivity)) {
-//            return;
-//        }
-
         if (isIntentValidation(intent)) {
             intent = urlMap(intent);
             super.startActivityForResult(intent, requestCode);
         }
     }
-
 }
