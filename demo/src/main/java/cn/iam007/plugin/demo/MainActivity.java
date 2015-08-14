@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.base.PluginActivity;
+import cn.iam007.plugin.base.PluginConstants;
 import cn.iam007.plugin.model.PluginFragmentSpec;
 import cn.iam007.plugin.model.PluginItem;
 
@@ -37,9 +38,10 @@ public class MainActivity extends Activity {
 
                 PluginFragmentSpec fragmentSpec =
                         new PluginFragmentSpec(fragmentCode, fragmentName);
-                intent.putExtra("_fragment", fragmentSpec);
+                fragmentSpec.setTitle("Flappy Batta");
+                intent.putExtra(PluginConstants.KEY_FRAGMENT, fragmentSpec);
 
-                intent.putExtra("_pluginId", "id_1");
+                intent.putExtra(PluginConstants.KEY_PLUGIN_ID, "id_1");
                 startActivity(intent);
             }
         });

@@ -1,35 +1,46 @@
 package cn.iam007.plugin.base;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.dynamicloader.PluginClassLoader;
 import cn.iam007.plugin.dynamicloader.PluginResources;
 import cn.iam007.plugin.model.PluginFileSpec;
 import cn.iam007.plugin.model.PluginFragmentSpec;
+import cn.iam007.plugin.model.PluginItem;
 
-public class PluginActivity extends PluginBaseActivity {
+public class PluginActivity extends AppCompatActivity {
 
     private String fragmentName;
     private boolean loaded;
     private PluginClassLoader classLoader;
-    private PluginResources myResources;
+    private PluginResources mResources;
     private AssetManager assetManager;
     private Resources resources;
     private Theme theme;
     private FrameLayout rootView;
+
+    /**
+     * 插件id
+     */
+    private String mPluginId;
+    protected PluginFileSpec mPluginFileSpec;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,12 +49,13 @@ public class PluginActivity extends PluginBaseActivity {
         Intent intent = getIntent();
         int error = 0;
 
-        PluginFileSpec fileSpec = getPluginFileSpec();
+        mPluginId = intent.getStringExtra(PluginConstants.KEY_PLUGIN_ID);
+        mPluginFileSpec = PluginManager.getPluginItem(mPluginId).getPluginFileSpec();
 
-        // must be load at the first start
         do {
             // 获取需要启动的fragment spec
-            PluginFragmentSpec fragmentSpec = intent.getParcelableExtra("_fragment");
+            PluginFragmentSpec fragmentSpec =
+                    intent.getParcelableExtra(PluginConstants.KEY_FRAGMENT);
 
             // 设置标题
             setTitle(fragmentSpec.title());
@@ -55,7 +67,7 @@ public class PluginActivity extends PluginBaseActivity {
                 break;
             }
 
-            classLoader = PluginClassLoader.getClassLoader(this, fileSpec);
+            classLoader = PluginClassLoader.getClassLoader(this, mPluginFileSpec);
             loaded = classLoader != null;
             if (!loaded) {
                 // TODO: 加载插件class出现异常
@@ -82,14 +94,16 @@ public class PluginActivity extends PluginBaseActivity {
             return;
         }
 
-        // the fragment will be restored by framework
-        if (savedInstanceState != null)
+        if (savedInstanceState != null) {
             return;
+        }
 
-        Fragment fragment = null;
+        Fragment fragment;
         try {
-            fragment = (Fragment) getClassLoader().loadClass(fragmentName)
-                    .newInstance();
+            fragment = (Fragment) getClassLoader().loadClass(fragmentName).newInstance();
+            Bundle bundle = new Bundle();
+            bundle.putString(PluginConstants.KEY_PLUGIN_ID, mPluginId);
+            fragment.setArguments(bundle);
         } catch (Exception e) {
             // TODO: 初始化fragment出现异常
             loaded = false;
@@ -117,24 +131,39 @@ public class PluginActivity extends PluginBaseActivity {
         return classLoader == null ? super.getClassLoader() : classLoader;
     }
 
-    public String getFragmentName() {
-        return fragmentName;
-    }
-
-    @Override
-    public Intent urlMap(Intent intent) {
+    /**
+     * 解析插件的intent
+     */
+    private final Intent urlMap(Intent intent) {
         do {
-            // only process my scheme uri
             Uri uri = intent.getData();
-            if (uri == null)
+            if (uri == null) {
                 break;
-            if (uri.getScheme() == null)
+            }
+
+            if (uri.getScheme() == null) {
                 break;
-            if (!(PluginConstants.PRIMARY_SCHEME.equalsIgnoreCase(uri.getScheme())))
+            }
+
+            if (!(PluginConstants.PRIMARY_SCHEME.equalsIgnoreCase(uri.getScheme()))) {
                 break;
+            }
+
+            PluginItem pluginItem = PluginManager.getPluginItem(mPluginId);
+            if (pluginItem == null) {
+                break;
+            }
+            String fragmentCode = uri.getHost();
+            PluginFragmentSpec fragmentSpec = pluginItem.getFragment(fragmentCode);
+
+            //            intent = new Intent();
+            intent.setClass(this, PluginActivity.class);
+            //            intent.setData(uri);
+            intent.putExtra(PluginConstants.KEY_PLUGIN_ID, mPluginId);
+            intent.putExtra(PluginConstants.KEY_PLUGIN_ID, fragmentSpec);
         } while (false);
 
-        return super.urlMap(intent);
+        return intent;
     }
 
     @Override
@@ -153,23 +182,43 @@ public class PluginActivity extends PluginBaseActivity {
     }
 
     public PluginResources getOverrideResources() {
-        return myResources;
+        return mResources;
     }
 
     public void setOverrideResources(PluginResources myres) {
         if (myres == null) {
-            this.myResources = null;
+            this.mResources = null;
             this.resources = null;
             this.assetManager = null;
             this.theme = null;
         } else {
-            this.myResources = myres;
+            this.mResources = myres;
             this.resources = myres.getResources();
             this.assetManager = myres.getAssets();
             Theme t = myres.getResources().newTheme();
             t.setTo(getTheme());
             this.theme = t;
         }
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        intent = urlMap(intent);
+        super.startActivity(intent);
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        intent = urlMap(intent);
+        super.startActivityForResult(intent, requestCode);
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    @Override
+    public void startActivityFromFragment(android.app.Fragment fragment, Intent intent,
+                                          int requestCode) {
+        intent = urlMap(intent);
+        super.startActivityFromFragment(fragment, intent, requestCode);
     }
 
     @Override

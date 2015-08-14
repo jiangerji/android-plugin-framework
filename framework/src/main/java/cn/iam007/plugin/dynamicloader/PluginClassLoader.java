@@ -6,12 +6,12 @@ import android.util.Log;
 import java.io.File;
 import java.util.HashMap;
 
+import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.model.PluginFileSpec;
-import cn.iam007.plugin.utils.CacheUtils;
 import dalvik.system.DexClassLoader;
 
 public class PluginClassLoader extends DexClassLoader {
-    //    FileSpec file;
+
     PluginFileSpec mFileSpec;
     PluginClassLoader[] mDeps;
 
@@ -95,7 +95,7 @@ public class PluginClassLoader extends DexClassLoader {
         // TODO: 加载该插件依赖的插件
 
         // 加载classloader
-        File dir = CacheUtils.getPluginDir(context);
+        File dir = PluginManager.getPluginDir(context);
 
         // 获取插件apk
         dir = new File(dir, pluginId);

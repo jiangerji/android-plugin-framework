@@ -17,9 +17,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.base.PluginActivity;
 import cn.iam007.plugin.model.PluginFileSpec;
-import cn.iam007.plugin.utils.CacheUtils;
 
 public class PluginResources {
 
@@ -197,7 +197,7 @@ public class PluginResources {
         if (rl != null)
             return rl;
 
-        File dir = CacheUtils.getPluginDir(context);
+        File dir = PluginManager.getPluginDir(context);
         dir = new File(dir, file.getPluginId());
         File path = new File(dir, file.getPluginMD5() + ".apk");
         if (!path.isFile())
@@ -276,7 +276,7 @@ public class PluginResources {
             }
         }
 
-        File dir = CacheUtils.getPluginDir(context);
+        File dir = PluginManager.getPluginDir(context);
         dir = new File(dir, file.getPluginId());
         File path = new File(dir, file.getPluginMD5() + ".apk");
         if (!path.isFile())

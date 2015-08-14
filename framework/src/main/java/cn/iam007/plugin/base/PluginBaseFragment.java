@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.KeyEvent;
 
 import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.model.PluginFragmentSpec;
@@ -19,19 +18,18 @@ public class PluginBaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Activity activity = getActivity();
-        if (!(activity instanceof PluginBaseActivity)) {
-            return;
-        }
+//        Activity activity = getActivity();
+//        if (!(activity instanceof PluginBaseActivity)) {
+//            return;
+//        }
 
-        mPluginId = ((PluginBaseActivity) activity).getPluginId();
-//        StatService.onPageStart(getActivity(), "plugin.fragment:" + mPluginId);
+        Bundle bundle = getArguments();
+        mPluginId = bundle.getString(PluginConstants.KEY_PLUGIN_ID);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        StatService.onPageEnd(getActivity(), "plugin.fragment:" + mPluginId);
     }
 
     protected Intent urlMap(Intent intent) {
@@ -94,9 +92,9 @@ public class PluginBaseFragment extends Fragment {
     @Override
     public void startActivity(Intent intent) {
         Activity activity = getActivity();
-        if (!(activity instanceof PluginBaseActivity)) {
-            return;
-        }
+//        if (!(activity instanceof PluginBaseActivity)) {
+//            return;
+//        }
 
         if (isIntentValidation(intent)) {
             intent = urlMap(intent);
@@ -106,19 +104,15 @@ public class PluginBaseFragment extends Fragment {
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode) {
-        Activity activity = getActivity();
-        if (!(activity instanceof PluginBaseActivity)) {
-            return;
-        }
+//        Activity activity = getActivity();
+//        if (!(activity instanceof PluginBaseActivity)) {
+//            return;
+//        }
 
         if (isIntentValidation(intent)) {
             intent = urlMap(intent);
             super.startActivityForResult(intent, requestCode);
         }
-    }
-
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return false;
     }
 
 }
