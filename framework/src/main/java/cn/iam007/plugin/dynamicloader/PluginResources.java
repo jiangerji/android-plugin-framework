@@ -165,7 +165,6 @@ public class PluginResources {
 
     /**
      * 同LayoutInflater.inflate(id, parent, attachToRoot)
-     * <p/>
      * 不会处理依赖关系，请确保id对应的layout在当前包内
      *
      * @return
@@ -187,7 +186,7 @@ public class PluginResources {
         }
     }
 
-    static final HashMap<String, PluginResources> loaders = new HashMap<String, PluginResources>();
+    static final HashMap<String, PluginResources> loaders = new HashMap<>();
 
     /**
      * return null if not available on the disk
@@ -200,8 +199,9 @@ public class PluginResources {
         File dir = PluginManager.getPluginDir(context);
         dir = new File(dir, file.getPluginId());
         File path = new File(dir, file.getPluginMD5() + ".apk");
-        if (!path.isFile())
+        if (!path.isFile()) {
             return null;
+        }
 
         try {
             AssetManager am = AssetManager.class.newInstance();

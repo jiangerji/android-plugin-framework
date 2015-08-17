@@ -21,7 +21,9 @@ public class PluginFragmentSpec implements Parcelable {
      */
     private String name;
 
-    // fragment title
+    /**
+     * 插件显示的标题
+     */
     private String title;
 
     public PluginFragmentSpec(String code, String name) {

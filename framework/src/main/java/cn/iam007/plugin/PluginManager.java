@@ -47,10 +47,10 @@ public class PluginManager {
     }
 
     /**
-     * 获取当前插件缓存目录
+     * 获取插件缓存根目录
      *
      * @param context
-     * @return 返回当前插件缓存目录
+     * @return 返回插件缓存根目录
      */
     public static File getPluginDir(Context context) {
         if (mPluginRootDir != null) {

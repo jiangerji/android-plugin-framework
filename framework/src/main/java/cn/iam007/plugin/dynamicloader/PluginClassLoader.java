@@ -1,7 +1,6 @@
 package cn.iam007.plugin.dynamicloader;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.util.HashMap;
@@ -33,16 +32,8 @@ public class PluginClassLoader extends DexClassLoader {
         return mFileSpec;
     }
 
-    /**
-     * @param fileSpec the mFileSpec to set
-     */
-    public void setFileSpec(PluginFileSpec fileSpec) {
-        this.mFileSpec = fileSpec;
-    }
-
     @Override
-    protected Class<?> loadClass(String className, boolean resolve)
-            throws ClassNotFoundException {
+    protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
         Class<?> clazz = findLoadedClass(className);
         if (clazz != null) {
             return clazz;
@@ -60,8 +51,7 @@ public class PluginClassLoader extends DexClassLoader {
         if (mDeps != null) {
             for (PluginClassLoader c : mDeps) {
                 try {
-                    clazz = c.findClass(className);
-                    break;
+                    clazz = c.loadClass(className, false);
                 } catch (ClassNotFoundException e) {
                 }
             }
@@ -78,10 +68,9 @@ public class PluginClassLoader extends DexClassLoader {
     static final HashMap<String, PluginClassLoader> loaders = new HashMap<>();
 
     /**
-     * return the classloader of the plugin, if the plugin apk file is not
-     * exsites on the disk, return null
+     * 返回插件的classloader, 如果插件apk文件不存在或者有其他错误，返回null
      *
-     * @param pluginFileSpec
+     * @param pluginFileSpec 插件文件
      * @return
      */
     public static PluginClassLoader getClassLoader(Context context, PluginFileSpec pluginFileSpec) {
@@ -99,9 +88,10 @@ public class PluginClassLoader extends DexClassLoader {
 
         // 获取插件apk
         dir = new File(dir, pluginId);
+
+        // 使用插件的md值作为文件名
         File path = new File(dir, pluginFileSpec.getPluginMD5() + ".apk");
         if (!path.isFile()) {
-            Log.d("PluginClassLoader", "" + path.getAbsolutePath() + " is not exsits!");
             return null;
         }
 
