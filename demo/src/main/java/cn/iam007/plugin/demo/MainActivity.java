@@ -3,7 +3,12 @@ package cn.iam007.plugin.demo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
+import android.widget.Toast;
+
+import com.avos.avoscloud.AVOSCloud;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +27,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AVOSCloud.initialize(getApplication(), "detaw87pwodm1ulqc7trjpw596dedjtfzalwu744xvtq6afh",
+                "5ssyubw0t77n2pbf1g1pwcgxletkgzol5ctg0nt6hia0sgov");
+
+        PluginUtils.init(this);
 
         PluginItem item = new PluginItem(this, makeTmpPluginItem());
         PluginManager.addPluginItem(item);
@@ -45,7 +55,27 @@ public class MainActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        findViewById(R.id.upload).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PluginUtils.uploadPlugins(MainActivity.this);
+                    }
+                }).start();
+            }
+        });
     }
+
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            Toast.makeText(MainActivity.this, "succ", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+    });
 
     private JSONObject makeTmpPluginItem() {
         JSONObject object = new JSONObject();
