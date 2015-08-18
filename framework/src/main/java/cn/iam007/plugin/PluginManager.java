@@ -5,6 +5,8 @@ import android.content.Context;
 import java.io.File;
 import java.util.HashMap;
 
+import cn.iam007.plugin.base.PluginConstants;
+import cn.iam007.plugin.model.PluginFileSpec;
 import cn.iam007.plugin.model.PluginItem;
 
 
@@ -63,5 +65,16 @@ public class PluginManager {
             mPluginRootDir = context.getCacheDir();
         }
         return mPluginRootDir;
+    }
+
+    /**
+     * 返回插件安装文件
+     *
+     * @return
+     */
+    public static File getPluginFile(Context context, PluginFileSpec item) {
+        File dir = PluginManager.getPluginDir(context);
+        dir = new File(dir, item.getPluginId());
+        return new File(dir, item.getPluginMD5() + PluginConstants.PLUGIN_SUFFIX);
     }
 }

@@ -7,6 +7,8 @@ public class PluginConstants {
      */
     public static final String PRIMARY_SCHEME = "app";
 
+    public static final String PLUGIN_SUFFIX = ".plg";
+
     public static final String KEY_PLUGIN_ID = "pluginId";
     public static final String KEY_FRAGMENT = "fragment";
 }

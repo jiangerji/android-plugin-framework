@@ -196,9 +196,7 @@ public class PluginResources {
         if (rl != null)
             return rl;
 
-        File dir = PluginManager.getPluginDir(context);
-        dir = new File(dir, file.getPluginId());
-        File path = new File(dir, file.getPluginMD5() + ".apk");
+        File path = PluginManager.getPluginFile(context, file);
         if (!path.isFile()) {
             return null;
         }
@@ -276,11 +274,10 @@ public class PluginResources {
             }
         }
 
-        File dir = PluginManager.getPluginDir(context);
-        dir = new File(dir, file.getPluginId());
-        File path = new File(dir, file.getPluginMD5() + ".apk");
-        if (!path.isFile())
+        File path = PluginManager.getPluginFile(context, file);
+        if (!path.isFile()) {
             throw new RuntimeException(path + " not exists");
+        }
 
         try {
             AssetManager am = AssetManager.class.newInstance();

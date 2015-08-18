@@ -4,8 +4,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.io.File;
+
+import cn.iam007.plugin.PluginManager;
+import cn.iam007.plugin.base.PluginConstants;
 
 /**
  * 插件的基本信息

@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.HashMap;
 
 import cn.iam007.plugin.PluginManager;
+import cn.iam007.plugin.base.PluginConstants;
 import cn.iam007.plugin.model.PluginFileSpec;
 import dalvik.system.DexClassLoader;
 
@@ -90,7 +91,7 @@ public class PluginClassLoader extends DexClassLoader {
         dir = new File(dir, pluginId);
 
         // 使用插件的md值作为文件名
-        File path = new File(dir, pluginFileSpec.getPluginMD5() + ".apk");
+        File path = new File(dir, pluginFileSpec.getPluginMD5() + PluginConstants.PLUGIN_SUFFIX);
         if (!path.isFile()) {
             return null;
         }
