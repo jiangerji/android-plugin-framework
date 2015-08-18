@@ -3,7 +3,7 @@
   "fragments": [
     {
       // fragment的类名
-      "name": "com.jucyzhang.flappybatta.GameActivity",
+      "name": "cn.iam007.plugin.demo.p2048.MainFragment",
       // 启动该fragment的action id
       "code": "launcher"
     }
@@ -14,9 +14,9 @@
   // "name": "Flappy Bird",
 
   // 插件id, 插件的唯一标示符，请不要轻易修改
-  "id": "flappybatta",
+  "id": "2048",
   // 插件描述
-  "desc": "Flappy bird plugin demo",
+  "desc": "2048 plugin demo",
   // 插件类型, [normal], 暂时不知道怎么用
   "type": "normal",
   // 该版本插件是否需要强制更新

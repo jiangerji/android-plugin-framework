@@ -3,6 +3,7 @@ package cn.iam007.plugin.demo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -12,6 +13,8 @@ import com.avos.avoscloud.AVOSCloud;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
 
 import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.base.PluginActivity;
@@ -27,6 +30,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        PluginManager.setPluginDir(new File(getExternalCacheDir(), "plugins"));
 
         AVOSCloud.initialize(getApplication(), "detaw87pwodm1ulqc7trjpw596dedjtfzalwu744xvtq6afh",
                 "5ssyubw0t77n2pbf1g1pwcgxletkgzol5ctg0nt6hia0sgov");
@@ -44,14 +49,14 @@ public class MainActivity extends Activity {
                 intent.setClass(MainActivity.this, PluginActivity.class);
 
                 String fragmentCode = "1";
-                String fragmentName = "cn.iam007.plugin.flappybatta.GameFragment";
+                String fragmentName = "cn.iam007.plugin.demo.p2048.MainFragment";
 
                 PluginFragmentSpec fragmentSpec =
                         new PluginFragmentSpec(fragmentCode, fragmentName);
-                fragmentSpec.setTitle("Flappy Batta");
+                fragmentSpec.setTitle("2048");
                 intent.putExtra(PluginConstants.KEY_FRAGMENT, fragmentSpec);
 
-                intent.putExtra(PluginConstants.KEY_PLUGIN_ID, "id_1");
+                intent.putExtra(PluginConstants.KEY_PLUGIN_ID, "2048");
                 startActivity(intent);
             }
         });
@@ -80,11 +85,11 @@ public class MainActivity extends Activity {
     private JSONObject makeTmpPluginItem() {
         JSONObject object = new JSONObject();
         try {
-            object.put("id", "id_1");
+            object.put("id", "2048");
             object.put("name", "name_1");
             object.put("desc", "desc_1");
             object.put("icon", "icon_1");
-            object.put("md5", "md5_1");
+            object.put("md5", "2048");
             object.put("url", "url_1");
             object.put("type", "type_1");
             object.put("version", "version_1");
