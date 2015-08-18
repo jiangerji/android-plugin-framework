@@ -1,0 +1,24 @@
+{
+  // 定义插件fragment ui
+  "fragments": [
+    {
+      // fragment的类名
+      "name": "com.jucyzhang.flappybatta.GameActivity",
+      // 启动该fragment的action id
+      "code": "launcher"
+    }
+  ],
+  // 插件版本号，使用apk的versionCode
+  // "version": "1.0",
+  // 插件名称，使用apk的label
+  // "name": "Flappy Bird",
+
+  // 插件id, 插件的唯一标示符，请不要轻易修改
+  "id": "flappybatta",
+  // 插件描述
+  "desc": "Flappy bird plugin demo",
+  // 插件类型, [normal], 暂时不知道怎么用
+  "type": "normal",
+  // 该版本插件是否需要强制更新
+  "forceUpdate": false
+}
