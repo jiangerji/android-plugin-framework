@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_plugin_not_loaded">该插件未加载！</string>
+    <string name="error_plugin_id_is_empty">传入的插件ID为空！</string>
+    <string name="error_plugin_binary_error">插件可执行文件为空！</string>
+    <string name="error_plugin_binary_format_error">插件格式错误！</string>
+    <string name="error_plugin_launch_ui_is_empty">插件没有设置启动UI.</string>
+</resources>
