@@ -1,5 +1,5 @@
 {
-  // 定义插件fragment ui
+  // 定义插件fragment ui, 第一个fragment作为启动fragment
   "fragments": [
     {
       // fragment的类名

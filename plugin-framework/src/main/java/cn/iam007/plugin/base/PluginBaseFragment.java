@@ -5,14 +5,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import java.io.File;
+
 import cn.iam007.plugin.PluginManager;
+import cn.iam007.plugin.loader.PluginResourceLoader;
+import cn.iam007.plugin.model.PluginSpec;
 
 /**
  * 插件UI fragment基类
  */
 public class PluginBaseFragment extends Fragment {
 
-    private String mPluginId = null;
+    private PluginSpec mPluginSpec = null;
+
+    private PluginResourceLoader mPluginResourceLoader = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -21,7 +27,10 @@ public class PluginBaseFragment extends Fragment {
         setHasOptionsMenu(true);
 
         Bundle bundle = getArguments();
-        mPluginId = bundle.getString(PluginConstants.KEY_PLUGIN_ID);
+        mPluginSpec = bundle.getParcelable(PluginConstants.KEY_PLUGIN_SPEC);
+
+        mPluginResourceLoader = PluginResourceLoader.getResource(getActivity().getApplication(),
+                new File(mPluginSpec.getPluginBinary()));
     }
 
     @Override
@@ -37,7 +46,7 @@ public class PluginBaseFragment extends Fragment {
     }
 
     /**
-     * 将plugin fragment中的intent转换为android系统intent
+     * todo: 将plugin fragment中的intent转换为android系统intent
      *
      * @param intent
      * @return
@@ -73,5 +82,9 @@ public class PluginBaseFragment extends Fragment {
         } while (false);
 
         return intent;
+    }
+
+    public PluginResourceLoader getResource() {
+        return mPluginResourceLoader;
     }
 }

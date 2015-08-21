@@ -6,10 +6,15 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.util.Base64;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+
+import cn.iam007.plugin.base.PluginActivity;
 
 /**
  * 加载插件中的资源文件的类
@@ -104,6 +109,29 @@ public class PluginResourceLoader {
     }
 
     /**
+     * 同LayoutInflater.inflate(id, parent, attachToRoot)
+     * 不会处理依赖关系，请确保id对应的layout在当前包内
+     *
+     * @return
+     * @throws Resources.NotFoundException
+     */
+    public View inflate(Context context, int id, ViewGroup parent, boolean attachToRoot) {
+        if (!(context instanceof PluginActivity)) {
+            throw new RuntimeException(
+                    "unable to inflate without PluginActivity context");
+        }
+        PluginActivity ma = (PluginActivity) context;
+        PluginResourceLoader old = ma.getOverrideResources();
+        ma.setOverrideResources(this);
+        try {
+            View v = LayoutInflater.from(context).inflate(id, parent, attachToRoot);
+            return v;
+        } finally {
+            ma.setOverrideResources(old);
+        }
+    }
+
+    /**
      * 返回插件自身的资源对象
      *
      * @return
@@ -122,7 +150,7 @@ public class PluginResourceLoader {
     }
 
 
-    static PluginResourceLoader getResource(Context context, File pluginFile) {
+    public static PluginResourceLoader getResource(Context context, File pluginFile) {
         PluginResourceLoader resourceLoader = null;
 
         do {

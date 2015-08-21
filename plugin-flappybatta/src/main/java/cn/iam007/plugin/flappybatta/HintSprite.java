@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
 public class HintSprite implements Sprite {
     private boolean alive = true;
@@ -17,7 +17,7 @@ public class HintSprite implements Sprite {
 
     public HintSprite(Context context) {
         //    Resources res = context.getResources();
-        PluginResources res = GameFragment.getPluginResource();
+        PluginResourceLoader res = GameFragment.getPluginResource();
         hint = res.getDrawable(R.drawable.bg_hint);
         height = ViewUtil.getScreenHeight(context);
         width = ViewUtil.getScreenWidth(context);

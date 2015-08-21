@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
 
 public class CoinSprite implements Sprite {
@@ -23,8 +23,7 @@ public class CoinSprite implements Sprite {
 
     public CoinSprite(Context context, Drawable coin) {
         this.coin = coin;
-        //    Resources res = context.getResources();
-        PluginResources res = GameFragment.getPluginResource();
+        PluginResourceLoader res = GameFragment.getPluginResource();
         speed = res.getDimension(R.dimen.coin_speed);
         coinWidth = (int) res.getDimension(R.dimen.coin_width);
         int height = ViewUtil.getScreenHeight(context);

@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
 public class GroundSprite implements Sprite {
 
@@ -24,7 +24,7 @@ public class GroundSprite implements Sprite {
 
     public GroundSprite(Context context) {
         //    Resources res = context.getResources();
-        PluginResources res = GameFragment.getPluginResource();
+        PluginResourceLoader res = GameFragment.getPluginResource();
         groundBottom = res.getDrawable(R.drawable.bg_ground_bottom);
         groundTop = res.getDrawable(R.drawable.bg_ground_up);
         width = ViewUtil.getScreenWidth(context);

@@ -97,7 +97,7 @@ public class PluginClassLoader extends DexClassLoader {
 
             File pluginDir = pluginFile.getParentFile();
             File dexDir = new File(pluginDir, "dex");
-            if (!dexDir.mkdirs()) {
+            if ((!dexDir.isDirectory()) && !dexDir.mkdirs()) {
                 Log.d(TAG, "创建dex失败！");
                 break;
             }

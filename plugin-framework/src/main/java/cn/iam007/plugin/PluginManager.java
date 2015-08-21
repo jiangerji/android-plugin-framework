@@ -1,10 +1,14 @@
 package cn.iam007.plugin;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
@@ -13,8 +17,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.iam007.plugin.base.PluginActivity;
 import cn.iam007.plugin.base.PluginConstants;
 import cn.iam007.plugin.model.PluginSpec;
 import cn.iam007.plugin.utils.FileUtils;
@@ -43,8 +49,9 @@ public class PluginManager {
             throw new RuntimeException("初始化PluginManager的context为空!");
         }
 
-        context.getDir("plugins", Context.MODE_PRIVATE);
+        createPluginsDB(context);
 
+        context.getDir("plugins", Context.MODE_PRIVATE);
         mPluginSpecMap = new ConcurrentHashMap<>();
     }
 
@@ -118,11 +125,18 @@ public class PluginManager {
 
             File installedFile =
                     new File(installDir, pluginSpec.getPluginMD5() + PluginConstants.PLUGIN_SUFFIX);
-            if (!pluginFile.renameTo(installedFile)) {
-                Log.d(TAG, "  安装失败：复制插件文件失败！");
+            pluginSpec.setPluginBinary(installedFile.getAbsolutePath());
+
+            // 加入插件列表
+            if (addPluginSpec(context, pluginSpec)) {
+                if (!pluginFile.renameTo(installedFile)) {
+                    Log.d(TAG, "  安装失败：复制插件文件失败！");
+                    break;
+                }
+            } else {
                 break;
             }
-
+            mPluginSpecMap.put(pluginId, pluginSpec);
             Log.d(TAG, "  安装成功！");
         } while (false);
 
@@ -136,7 +150,18 @@ public class PluginManager {
      */
 
     public static void launchPlugin(Context context, String pluginId) {
+        PluginSpec pluginSpec = mPluginSpecMap.get(pluginId);
+        Intent intent = new Intent();
+        intent.setClass(context, PluginActivity.class);
+        intent.putExtra(PluginConstants.KEY_PLUGIN_SPEC, pluginSpec);
+        context.startActivity(intent);
+    }
 
+    public static void launchPlugin(Context context, PluginSpec pluginSpec) {
+        Intent intent = new Intent();
+        intent.setClass(context, PluginActivity.class);
+        intent.putExtra(PluginConstants.KEY_PLUGIN_SPEC, pluginSpec);
+        context.startActivity(intent);
     }
 
     /**
@@ -159,7 +184,252 @@ public class PluginManager {
         return mPluginDir;
     }
 
-    public static PluginSpec getPluginSpec(String pluginId) {
-        return mPluginSpecMap.get(pluginId);
+    private final static String PLUGIN_DB_NAME = "plugins.sb";
+    private final static String PLUGIN_TABLE_NAME = "plugins";
+
+    private static void createPluginsDB(Context context) {
+        SQLiteDatabase db =
+                context.openOrCreateDatabase(PLUGIN_DB_NAME, Context.MODE_PRIVATE, null);
+        String createTableCmdFormat = "CREATE TABLE IF NOT EXISTS %s (" +
+                "'pluginId' TEXT PRIMARY KEY NOT NULL UNIQUE , " +
+                "'pluginTitle' TEXT, " +
+                "'pluginBinary' TEXT, " +
+                "'pluginLaunchFragment' TEXT, " +
+                "'pluginDesc' TEXT, " +
+                "'pluginType' TEXT, " +
+                "'pluginForceUpdate' BOOL DEFAULT false, " +
+                "'pluginMD5' TEXT NOT NULL )";
+        String createTableCmd = String.format(createTableCmdFormat, PLUGIN_TABLE_NAME);
+        try {
+            db.execSQL(createTableCmd);
+        } catch (Exception e) {
+            Log.d(TAG, "创建插件数据库失败！");
+        }
+        db.close();
+    }
+
+    private static boolean addPluginSpec(Context context, PluginSpec spec) {
+        boolean result = false;
+
+        SQLiteDatabase db =
+                context.openOrCreateDatabase(PLUGIN_DB_NAME, Context.MODE_PRIVATE, null);
+
+        ContentValues cv = new ContentValues();
+        cv.put("pluginId", spec.getPluginId());
+        cv.put("pluginTitle", spec.getTitle());
+        cv.put("pluginBinary", spec.getPluginBinary());
+        cv.put("pluginLaunchFragment", spec.getPluginLaunchUI());
+        cv.put("pluginDesc", spec.getPluginDesc());
+        cv.put("pluginType", spec.getPluginType());
+        cv.put("pluginForceUpdate", spec.getPluginForceUpdate());
+        cv.put("pluginMD5", spec.getPluginMD5());
+
+        //插入PluginSpec中的数据
+        Cursor cursor = null;
+        try {
+            String cmd =
+                    String.format("select count(*) from %s where pluginId = ?;", PLUGIN_TABLE_NAME);
+            cursor = db.rawQuery(cmd, new String[]{spec.getPluginId()});
+            cursor.moveToFirst();
+            if (cursor.getInt(0) > 0) {
+                db.update(PLUGIN_TABLE_NAME, cv, "pluginId = ?", new String[]{spec.getPluginId()});
+            } else {
+                db.insert(PLUGIN_TABLE_NAME, null, cv);
+            }
+
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        db.close();
+        return result;
+    }
+
+    /**
+     * 返回当前已经加载的插件
+     *
+     * @return
+     */
+    public static ArrayList<PluginSpec> getInstalledPlugin(Context context) {
+        SQLiteDatabase db =
+                context.openOrCreateDatabase(PLUGIN_DB_NAME, Context.MODE_PRIVATE, null);
+
+        String cmd = String.format("SELECT * FROM %s;", PLUGIN_TABLE_NAME);
+        Cursor c = db.rawQuery(cmd, null);
+        c.moveToFirst();
+
+        ArrayList<PluginSpec> specs = new ArrayList<>();
+        do {
+            int pluginIdIndex = c.getColumnIndex("pluginId");
+            if (pluginIdIndex < 0) {
+                break;
+            }
+            int pluginTitleIndex = c.getColumnIndex("pluginTitle");
+            if (pluginTitleIndex < 0) {
+                break;
+            }
+            int pluginBinaryIndex = c.getColumnIndex("pluginBinary");
+            if (pluginBinaryIndex < 0) {
+                break;
+            }
+            int pluginLaunchFragmentIndex = c.getColumnIndex("pluginLaunchFragment");
+            if (pluginLaunchFragmentIndex < 0) {
+                break;
+            }
+            int pluginDescIndex = c.getColumnIndex("pluginDesc");
+            if (pluginDescIndex < 0) {
+                break;
+            }
+            int pluginTypeIndex = c.getColumnIndex("pluginType");
+            if (pluginTypeIndex < 0) {
+                break;
+            }
+            int pluginForceUpdateIndex = c.getColumnIndex("pluginForceUpdate");
+            if (pluginForceUpdateIndex < 0) {
+                break;
+            }
+            int pluginMD5Index = c.getColumnIndex("pluginMD5");
+            if (pluginMD5Index < 0) {
+                break;
+            }
+
+
+            String pluginId;
+            String pluginTitle;
+            String pluginBinary;
+            String pluginLaunchFragment;
+            String pluginDesc;
+            String pluginType;
+            boolean pluginForceUpdate;
+            String pluginMD5;
+            while (!c.isAfterLast()) {
+                PluginSpec pluginSpec = new PluginSpec();
+
+                try {
+                    pluginId = c.getString(pluginIdIndex);
+                    pluginSpec.setPluginId(pluginId);
+
+                    pluginTitle = c.getString(pluginTitleIndex);
+                    pluginSpec.setTitle(pluginTitle);
+
+                    pluginBinary = c.getString(pluginBinaryIndex);
+                    pluginSpec.setPluginBinary(pluginBinary);
+
+                    pluginLaunchFragment = c.getString(pluginLaunchFragmentIndex);
+                    pluginSpec.setPluginLaunchUI(pluginLaunchFragment);
+
+                    pluginDesc = c.getString(pluginDescIndex);
+                    pluginSpec.setPluginDesc(pluginDesc);
+
+                    pluginType = c.getString(pluginTitleIndex);
+                    pluginSpec.setPluginType(pluginType);
+
+                    pluginForceUpdate = Boolean.valueOf(c.getString(pluginForceUpdateIndex));
+                    pluginSpec.setPluginForceUpdate(pluginForceUpdate);
+
+                    pluginMD5 = c.getString(pluginMD5Index);
+                    pluginSpec.setPluginMD5(pluginMD5);
+
+                    specs.add(pluginSpec);
+                    Log.d(TAG, "get:" + pluginSpec);
+                } catch (Exception e) {
+
+                }
+
+                c.moveToNext();
+            }
+        } while (false);
+
+        return specs;
+    }
+
+    /**
+     * 加载已经安装插件的PluginSpec
+     *
+     * @param context
+     * @param pluginId
+     */
+    private static PluginSpec getPluginSpec(Context context, String pluginId) {
+        SQLiteDatabase db =
+                context.openOrCreateDatabase(PLUGIN_DB_NAME, Context.MODE_PRIVATE, null);
+
+        Cursor c = db.rawQuery("SELECT * FROM plugins WHERE pluginId = ?", new String[]{pluginId});
+        c.moveToFirst();
+
+        PluginSpec pluginSpec = null;
+
+        do {
+            try {
+                int index = c.getColumnIndex("pluginId");
+                if (index < 0) {
+                    break;
+                }
+                pluginId = c.getString(index);
+
+                index = c.getColumnIndex("pluginTitle");
+                if (index < 0) {
+                    break;
+                }
+                String pluginTitle = c.getString(index);
+
+                index = c.getColumnIndex("pluginBinary");
+                if (index < 0) {
+                    break;
+                }
+                String pluginBinary = c.getString(index);
+
+                index = c.getColumnIndex("pluginLaunchFragment");
+                if (index < 0) {
+                    break;
+                }
+                String pluginLaunchFragment = c.getString(index);
+
+                index = c.getColumnIndex("pluginDesc");
+                if (index < 0) {
+                    break;
+                }
+                String pluginDesc = c.getString(index);
+
+                index = c.getColumnIndex("pluginType");
+                if (index < 0) {
+                    break;
+                }
+                String pluginType = c.getString(index);
+
+                index = c.getColumnIndex("pluginForceUpdate");
+                if (index < 0) {
+                    break;
+                }
+                boolean pluginForceUpdate = Boolean.valueOf(c.getString(index));
+
+                index = c.getColumnIndex("pluginMD5");
+                if (index < 0) {
+                    break;
+                }
+                String pluginMD5 = c.getString(index);
+
+                pluginSpec = new PluginSpec();
+                pluginSpec.setPluginId(pluginId);
+                pluginSpec.setTitle(pluginTitle);
+                pluginSpec.setPluginBinary(pluginBinary);
+                pluginSpec.setPluginLaunchUI(pluginLaunchFragment);
+                pluginSpec.setPluginDesc(pluginDesc);
+                pluginSpec.setPluginType(pluginType);
+                pluginSpec.setPluginForceUpdate(pluginForceUpdate);
+                pluginSpec.setPluginMD5(pluginMD5);
+            } catch (Exception e) {
+
+            }
+        } while (false);
+
+        c.close();
+        db.close();
+
+        return pluginSpec;
     }
 }

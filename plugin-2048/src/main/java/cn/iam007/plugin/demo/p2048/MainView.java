@@ -1,7 +1,5 @@
 package cn.iam007.plugin.demo.p2048;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,7 +10,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import java.util.ArrayList;
+
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
 public class MainView extends View {
 
@@ -475,7 +475,7 @@ public class MainView extends View {
                     * cellSize
                     * 0.9f
                     / Math.max(cellSize * 0.9f,
-                            paint.measureText(String.valueOf(value)));
+                    paint.measureText(String.valueOf(value)));
             paint.setTextSize(tempTextSize);
             Bitmap bitmap = Bitmap.createBitmap(cellSize,
                     cellSize,
@@ -612,7 +612,7 @@ public class MainView extends View {
         return (int) ((paint.descent() + paint.ascent()) / 2);
     }
 
-    public MainView(Context context, PluginResources res) {
+    public MainView(Context context, PluginResourceLoader res) {
         super(context);
 
         mResources = res;
@@ -638,10 +638,6 @@ public class MainView extends View {
         game.newGame();
     }
 
-    private PluginResources mResources;
-
-    public void setResource(PluginResources res) {
-        mResources = res;
-    }
+    private PluginResourceLoader mResources;
 
 }

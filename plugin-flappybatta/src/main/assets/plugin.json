@@ -3,7 +3,7 @@
   "fragments": [
     {
       // fragment的类名
-      "name": "com.jucyzhang.flappybatta.GameActivity",
+      "name": "cn.iam007.plugin.flappybatta.GameFragment",
       // 启动该fragment的action id
       "code": "launcher"
     }

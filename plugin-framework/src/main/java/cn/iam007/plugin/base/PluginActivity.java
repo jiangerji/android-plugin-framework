@@ -1,6 +1,8 @@
 package cn.iam007.plugin.base;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,9 +18,9 @@ import android.widget.TextView;
 
 import java.io.File;
 
-import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.R;
 import cn.iam007.plugin.loader.PluginClassLoader;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 import cn.iam007.plugin.model.PluginSpec;
 
 /**
@@ -36,6 +38,10 @@ public class PluginActivity extends AppCompatActivity {
     public final static String KEY_TOOLBAR_GONE = "KEY_TOOLBAR_GONE";
 
     private PluginClassLoader mClassLoader;
+    private PluginResourceLoader mPluginResourcesLoader;
+    private AssetManager mAssetManager;
+    private Resources mResources;
+    private Resources.Theme mTheme;
 
     private Toolbar mToolbar;
     private FrameLayout mContainer;
@@ -89,19 +95,19 @@ public class PluginActivity extends AppCompatActivity {
         do {
             Intent intent = getIntent();
 
-            String pluginId = intent.getStringExtra(PluginConstants.KEY_PLUGIN_ID);
-            if (TextUtils.isEmpty(pluginId)) {
-                errorCode = PluginConstants.ERROR_ACTIVITY_PLUGIN_ID_IS_EMPTY;
-                break;
-            }
 
-            PluginSpec pluginSpec = PluginManager.getPluginSpec(pluginId);
+            PluginSpec pluginSpec = intent.getParcelableExtra(PluginConstants.KEY_PLUGIN_SPEC);
 
             if (pluginSpec == null) {
                 errorCode = PluginConstants.ERROR_ACTIVITY_PLUGIN_NOT_LOAD;
                 break;
             }
 
+            String pluginId = pluginSpec.getPluginId();
+            if (TextUtils.isEmpty(pluginId)) {
+                errorCode = PluginConstants.ERROR_ACTIVITY_PLUGIN_ID_IS_EMPTY;
+                break;
+            }
 
             // 设置为插件的title
             String title = pluginSpec.getTitle();
@@ -128,7 +134,11 @@ public class PluginActivity extends AppCompatActivity {
             Fragment fragment;
             try {
                 fragment = (Fragment) getClassLoader().loadClass(launchFragment).newInstance();
+                Bundle argument = new Bundle();
+                argument.putParcelable(PluginConstants.KEY_PLUGIN_SPEC, pluginSpec);
+                fragment.setArguments(argument);
             } catch (Exception e) {
+                e.printStackTrace();
                 errorCode = PluginConstants.ERROR_ACTIVITY_PLUGIN_LAUNCH_UI_IS_EMPTY;
                 break;
             }
@@ -157,5 +167,51 @@ public class PluginActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return mClassLoader == null ? super.getClassLoader() : mClassLoader;
+    }
+
+    /**
+     * 设置PluginActivity使用新的资源加载器，主要是插件中inflate接口使用,插件通过R文件插件资源使用
+     *
+     * @param pluginResourceLoader
+     */
+    public void setOverrideResources(PluginResourceLoader pluginResourceLoader) {
+        if (pluginResourceLoader == null) {
+            this.mPluginResourcesLoader = null;
+            this.mResources = null;
+            this.mAssetManager = null;
+            this.mTheme = null;
+        } else {
+            this.mPluginResourcesLoader = pluginResourceLoader;
+            this.mResources = pluginResourceLoader.getResources();
+            this.mAssetManager = pluginResourceLoader.getAssets();
+            Resources.Theme t = pluginResourceLoader.getResources().newTheme();
+            t.setTo(getTheme());
+            this.mTheme = t;
+        }
+    }
+
+    @Override
+    public Resources.Theme getTheme() {
+        return mTheme == null ? super.getTheme() : mTheme;
+    }
+
+    @Override
+    public AssetManager getAssets() {
+        return mAssetManager == null ? super.getAssets() : mAssetManager;
+    }
+
+    @Override
+    public Resources getResources() {
+        return mResources == null ? super.getResources() : mResources;
+    }
+
+
+    public PluginResourceLoader getOverrideResources() {
+        return mPluginResourcesLoader;
     }
 }

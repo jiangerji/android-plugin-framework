@@ -8,8 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.File;
+
 import cn.iam007.plugin.base.PluginBaseFragment;
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.base.PluginConstants;
+import cn.iam007.plugin.loader.PluginResourceLoader;
+import cn.iam007.plugin.model.PluginSpec;
 
 public class MainFragment extends PluginBaseFragment {
 
@@ -24,13 +28,13 @@ public class MainFragment extends PluginBaseFragment {
     public static final String GAME_STATE = "game state";
     public static final String UNDO_GAME_STATE = "undo game state";
 
-    PluginResources res = null;
+    PluginResourceLoader res = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        res = PluginResources.getResource(getActivity(), MainFragment.class);
+
+        res = getResource();
         view = new MainView(getActivity(), res);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -50,27 +54,6 @@ public class MainFragment extends PluginBaseFragment {
             LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         return view;
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_MENU) {
-            //Do nothing
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            view.game.move(2);
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            view.game.move(0);
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-            view.game.move(3);
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            view.game.move(1);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     @Override

@@ -7,7 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
+
 
 public class BattaSprite implements Sprite {
 
@@ -40,7 +41,7 @@ public class BattaSprite implements Sprite {
 
     public BattaSprite(Context context) {
         //        Resources res = context.getResources();
-        PluginResources res = GameFragment.getPluginResource();
+        PluginResourceLoader res = GameFragment.getPluginResource();
         int currentBird = random.nextInt(DRAWABLE_BIRD.length);
         birds[0] = birds[2] = res.getDrawable(DRAWABLE_BIRD[currentBird][0]);
         birds[1] = res.getDrawable(DRAWABLE_BIRD[currentBird][1]);

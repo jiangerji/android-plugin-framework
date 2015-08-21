@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Align;
 
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
 public class ScoreSprite implements Sprite {
 
@@ -33,7 +33,7 @@ public class ScoreSprite implements Sprite {
 
     public ScoreSprite(Context context) {
         //    Resources res = context.getResources();
-        PluginResources res = GameFragment.getPluginResource();
+        PluginResourceLoader res = GameFragment.getPluginResource();
         textSize = res.getDimension(R.dimen.score_size);
         width = ViewUtil.getScreenWidth(context);
         marginTop = ViewUtil.dipResourceToPx(context, R.dimen.score_margin);

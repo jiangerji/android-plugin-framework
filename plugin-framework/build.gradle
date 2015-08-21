@@ -18,6 +18,22 @@ android {
     }
 }
 
+task clearJar(type: Delete) {
+    println "Clear Jar!"
+    delete 'build/outputs/classes-debug.jar'
+    delete 'build/outputs/classes-release.jar'
+}
+
+task makeJar(type: Copy) {
+    println "make Jar!"
+    from('build/intermediates/bundles/debug/classes.jar')
+    into('build/outputs/')
+    include('classes.jar')
+    rename('classes.jar', 'classes-debug.jar')
+}
+
+makeJar.dependsOn(clearJar, build)
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.0'

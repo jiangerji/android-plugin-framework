@@ -17,7 +17,7 @@ public class MD5 {
         char str[] = new char[16 * 2];
         int k = 0;
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("MD5Utils");
             fis = new FileInputStream(file);
             byte[] buffer = new byte[2048];
             int length;

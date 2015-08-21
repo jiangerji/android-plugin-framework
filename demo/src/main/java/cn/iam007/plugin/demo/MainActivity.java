@@ -9,54 +9,67 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Toast;
 
-import com.avos.avoscloud.AVOSCloud;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 import cn.iam007.plugin.PluginManager;
 import cn.iam007.plugin.base.PluginActivity;
 import cn.iam007.plugin.base.PluginConstants;
-import cn.iam007.plugin.model.PluginFragmentSpec;
-import cn.iam007.plugin.model.PluginItem;
 
 /**
  * Created by Administrator on 2015/8/14.
  */
 public class MainActivity extends Activity {
 
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        PluginManager.init(this);
+
         PluginManager.setPluginDir(new File(getExternalCacheDir(), "plugins"));
 
-        AVOSCloud.initialize(getApplication(), "detaw87pwodm1ulqc7trjpw596dedjtfzalwu744xvtq6afh",
-                "5ssyubw0t77n2pbf1g1pwcgxletkgzol5ctg0nt6hia0sgov");
+//        AVOSCloud.initialize(getApplication(), "detaw87pwodm1ulqc7trjpw596dedjtfzalwu744xvtq6afh",
+//                "5ssyubw0t77n2pbf1g1pwcgxletkgzol5ctg0nt6hia0sgov");
 
-        PluginUtils.init(this);
-
-        PluginItem item = new PluginItem(this, makeTmpPluginItem());
-        PluginManager.addPluginItem(item);
+//        PluginUtils.init(this);
+//
+//        PluginItem item = null;
+//        try {
+//            item = new PluginItem(makeTmpPluginItem());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        PluginManager.addPluginItem(item);
 
         setContentView(R.layout.activity_main);
         findViewById(R.id.launch).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                Intent intent = new Intent();
+//                intent.setClass(MainActivity.this, PluginActivity.class);
+//
+//                String fragmentCode = "1";
+//                String fragmentName = "cn.iam007.plugin.demo.p2048.MainFragment";
+//
+////                PluginFragmentSpec fragmentSpec =
+////                        new PluginFragmentSpec(fragmentCode, fragmentName);
+////                fragmentSpec.setTitle("2048");
+////                intent.putExtra(PluginConstants.KEY_FRAGMENT, fragmentSpec);
+//
+//                intent.putExtra(PluginActivity.KEY_TOOLBAR_GONE, false);
+//                startActivity(intent);
+//                String pluginId = "cn.iam007.plugin.demo.p2048";
+//                PluginManager.launchPlugin(MainActivity.this, pluginId);
+//
+//                PluginManager.getInstalledPlugin(getApplication());
                 Intent intent = new Intent();
-                intent.setClass(MainActivity.this, PluginActivity.class);
-
-                String fragmentCode = "1";
-                String fragmentName = "cn.iam007.plugin.demo.p2048.MainFragment";
-
-                PluginFragmentSpec fragmentSpec =
-                        new PluginFragmentSpec(fragmentCode, fragmentName);
-                fragmentSpec.setTitle("2048");
-                intent.putExtra(PluginConstants.KEY_FRAGMENT, fragmentSpec);
-
-                intent.putExtra(PluginConstants.KEY_PLUGIN_ID, "2048");
+                intent.setClass(MainActivity.this, PluginsActivity.class);
                 startActivity(intent);
             }
         });
@@ -67,7 +80,8 @@ public class MainActivity extends Activity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        PluginUtils.uploadPlugins(MainActivity.this);
+//                        PluginUtils.uploadPlugins(MainActivity.this);
+                        debugInitPluginDir();
                     }
                 }).start();
             }
@@ -99,4 +113,33 @@ public class MainActivity extends Activity {
         }
         return object;
     }
+
+    /**
+     * 该接口主要是debug使用，可以将插件根目录下的plg文件自动安装，并配置到PluginManager中
+     */
+    private void debugInitPluginDir() {
+        File pluginRootDir = new File(Environment.getExternalStorageDirectory(), "plugins");
+        pluginRootDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if (filename.endsWith(PluginConstants.PLUGIN_SUFFIX)) {
+                    // 找到插件文件，进行安装
+                    PluginManager.installPlugin(getApplication(), new File(dir, filename), false);
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+//
+//    private void debugInstallPlugin(File pluginFile) {
+//        if (pluginFile == null || (!pluginFile.isFile())) {
+//            return;
+//        }
+//
+//        do {
+////            PluginItem item = PluginUtils.getPluginItem(pluginFile.getAbsolutePath());
+//            PluginManager.installPlugin(this, pluginFile);
+//        } while (false);
+//    }
 }

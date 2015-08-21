@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -29,10 +30,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import cn.iam007.plugin.base.PluginBaseFragment;
-import cn.iam007.plugin.dynamicloader.PluginResources;
+import cn.iam007.plugin.loader.PluginResourceLoader;
 
-public class GameFragment extends PluginBaseFragment implements Callback,
-        OnClickListener {
+public class GameFragment extends PluginBaseFragment implements Callback, OnClickListener {
     /**
      * set to true in order to print fps in screen.
      */
@@ -85,26 +85,36 @@ public class GameFragment extends PluginBaseFragment implements Callback,
 
     private Random random = new Random();
 
-    public static PluginResources mResources;
+    public static PluginResourceLoader mResources;
 
-    public static PluginResources getPluginResource() {
+    public static PluginResourceLoader getPluginResource() {
         return mResources;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mResources = PluginResources.getResource(getActivity(), GameFragment.class);
     }
 
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View view = mResources.inflate(getActivity(), R.layout.activity_game,
-                container,
-                false);// 关联布局文件
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        mResources = getResource();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        mResources = null;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        mResources = getResource();
+        View view = mResources.inflate(getActivity(), R.layout.activity_game, container, false);
         ivBackground = (ImageView) view.findViewById(R.id.iv_background);
         surfaceView = (SurfaceView) view.findViewById(R.id.surface_view);
         surfaceView.setKeepScreenOn(true);
